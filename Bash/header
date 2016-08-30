@@ -1,0 +1,174 @@
+#!/bin/bash
+
+## Configuration reading ##
+function param() { 
+    if [ -z "$1" ] || [ ! -f "$1" ] || [ -z "$2" ]; then
+        echo "Configuration file not specified or doesn't exist."
+        exit 1;
+    fi
+    grep '^'"$2"'=' "$1" | sed 's#^'"$2"'='"##"
+    return
+}
+
+## Visual Functions ##
+# These function creates a visual indicator that a step has happened.
+function header () {
+    tput setaf 1; tput bold; echo $@; tput sgr0; return
+}
+function errorheader () {
+    tput setaf 1 1>&2; tput bold 1>&2; echo $@ 1>&2; tput sgr0 1>&2; return
+}
+
+## Storage functions ##
+function addfs() {
+    if [ -z "$1" ] || [ -z "$2" ] || (echo "$3" | egrep -v -E '^[0-9]{1,4}'); then
+        echo "Need a filesystem(1), volume group path(2), and size (3)"
+        return
+    fi
+    lvcreate -L $3"G" -n "$(echo $2 | cut -f 4 -d '/')" "$(echo $2 | cut -f 3 -d '/')"
+    mkfs.ext4 -m 0 -E nodiscard "$2"
+    tune2fs -e remount-ro "$2"
+    tune2fs -c 1 "$2"
+    mkdir "$1"
+    echo "$2 $1 ext4 defaults 1 2" >> /etc/fstab
+    mount "$1" &>/dev/null
+}
+#This function will forcibly remove a filesystem 1 and lv 2 from a VG
+function forciblyremove() {
+    if [ -z "$1" ] || [ -z "$2" ]; then
+        echo "Need a filesystem(1) and volume group path(2)"
+    elif [ -z "$(mount | grep " ""$1"" ")" ]; then
+        errorheader Filesystem is not mounted -- cannot safely remove mount point.
+    else
+        fuser -km "$1"
+        umount -l "$1"
+        rm -Rf "$1"
+    fi
+    lvremove -f "$2"
+    sed -i "/\/$(echo $2 | rev | cut -f 1 -d '/' | rev) /d" /etc/fstab
+}
+
+## Date Math Functions ##
+# These move dates to be used by AT jobs. They accept an date-style argument and return the new date in format YYMMDDHHMM.
+#This function returns a new date incremented by (1)seconds
+function incrementdate() {
+    if [ -z "$2" ]; then
+        currDateS=$(date +%s)
+    else
+        currDateS=$(date -d "$2" +%s)
+    fi
+    targetDateS=$(($currDateS + $1))
+    echo $(date -d '@'$targetDateS +%y%m%d%H%M)
+}
+#This function returns a new date decremented by (1)seconds
+function decrementdate() {
+    if [ -z "$2" ]; then
+        currDateS=$(date +%s)
+    else
+        currDateS=$(date -d "$2" +%s)
+    fi
+    targetDateS=$(($currDateS - $1))
+    echo $(date -d '@'$targetDateS +%y%m%d%H%M)
+}
+
+## QA Functions ##
+# This is for QA to test sanitizing input
+function qaunittest {
+    if [ -z "$1" ] || [ -z "$2" ]; then
+        echo Usage: qaunittest function input expectedreturn inputarguments
+        exit
+    fi
+    function="$1"
+    userinput="$2"
+    expectedreturn="$3"
+    fnargs="$4"
+    input="input""$inputcount"
+    cmd="$(printf "source /usr/local/src/SharedLibraries/Bash/header;%s '%s' '%s' %s >/dev/null;echo \$%s" "$function" "$input" "Input" "$fnargs" "$input")"
+    export $input="$(bash -c "$cmd" <<EOM
+$(echo -ne $userinput)
+EOM
+)"
+    if [ "${!input}" == "$expectedreturn" ]; then
+        tput setaf 2; printf "PASS "; tput sgr0; echo -- found ${!input} in \'$(echo $cmd | cut -f 2 -d ';')\'
+    else
+        tput setaf 1; printf "FAIL "; tput sgr0; echo -- found ${!input} \(expected $expectedreturn\) in \'$(echo $cmd | cut -f 2 -d ';')\'
+    fi
+    export inputcount=$(($inputcount + 1))
+    return
+}
+
+## Prompt functions ##
+## All input should pass through these to ensure it's appropriately sanitized.
+## Do not use read statements directly!
+## We do not unset the variable ${!1} so that if the script is accepting command-line arguments that are invalid the user is prompted.
+export maxattempts=5
+# This function will prompt the user for variable 1 with string 2 until it gets a nonempty answer.
+function prompt-var() {
+    if [ -z "$1" ] || [ -z "$2" ]; then
+        echo "Need a variable name (1) and a prompt string (2)"
+        return 1;
+    fi
+    inputtime="0"
+    #echo "$0 is checking for $1 -- currently set to <${!1}>"
+    while [ -z "${!1}" ] || (echo "${!1}" | egrep -v '^[-0-9a-zA-Z ,.@]{1,50}$' &>/dev/null); do
+        printf "%s: " "$2";
+        read $1;
+        if [ "${!1}" == "OPT" ] || [ $inputtime -gt $maxattempts ]; then exit 0; fi
+        inputtime=$(($inputtime + 1))
+    done
+    return 0;
+}
+
+# This function will prompt the user for variable 1 with string 2 until it gets a nonempty answer.
+function prompt-var-len() {
+    if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+        echo "Need a variable name (1), prompt string (2), and a length (3)"
+        return 1;
+    fi
+    inputtime="0"
+    #echo "$0 is checking for $1 -- currently set to <${!1}>"
+    while [ -z "${!1}" ] || (echo "${!1}" | grep -v -E "^[0-9a-zA-Z]{1,$3}$" &>/dev/null); do
+        printf "%s (Max length: %s): " "$2" "$3";
+        read $1;
+        if [ "${!1}" == "OPT" ] || [ $inputtime -gt $maxattempts ]; then exit 0; fi
+        inputtime=$(($inputtime + 1))
+    done
+    return 0;
+}
+# This function will prompt the user for variable 1 with string 2 until it gets a nonempty answer.
+function prompt-password() {
+    if [ -z "$1" ] || [ -z "$2" ]; then
+        echo "Need a variable name (1) and a prompt string (2)"
+        return 1;
+    fi
+    inputtime="0"
+    #echo "$0 is checking for $1 -- currently set to <${!1}>"
+    while [ -z "${!1}" ] || [ $(echo ${!1} | wc -c) -gt 50 ]; do
+        printf "%s: " "$2";
+        read -s $1;
+        if [ "${!1}" == "OPT" ] || [ $inputtime -gt $maxattempts ]; then exit 0; fi
+        echo
+        inputtime=$(($inputtime + 1))
+    done
+    return 0;
+}
+#This function will prompt the user for a variable 1 with string 2 until it gets an answer between min 3 and max 4.
+function prompt-num-var() {
+    if [ -z "$1" ] || [ -z "$2" ] || [ "$3" -ne "$3" ] || [ "$4" -le "$3" ]; then
+        echo "Need a variable name (1), prompt string (2), min (3), and max (4)";
+        echo 1: $1;
+        echo 2: $2;
+        echo 3: $3;
+        echo 4: $4;
+        return 1;
+    fi
+    inputtime="0"
+    #echo "$0 is checking for $1 -- currently set to <${!1}>"
+    while [ -z "${!1}" ] || (echo "${!1}" | grep -v -E "^[0-9]{1,8}$" &>/dev/null) || [ "${!1}" -lt "$3" ] || [ "${!1}" -gt "$4" ]; do
+        printf "%s (between %s and %s): " "$2" "$3" "$4";
+        read $1;
+        if [ "${!1}" == "OPT" ] || [ $inputtime -gt $maxattempts ]; then exit 0; fi
+        inputtime=$(($inputtime + 1))
+    done
+    return 0;
+}
