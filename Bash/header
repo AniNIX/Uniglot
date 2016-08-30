@@ -1,22 +1,39 @@
 #!/bin/bash
 
-## Configuration reading ##
-function param() { 
-    if [ -z "$1" ] || [ ! -f "$1" ] || [ -z "$2" ]; then
-        echo "Configuration file not specified or doesn't exist."
-        exit 1;
-    fi
-    grep '^'"$2"'=' "$1" | sed 's#^'"$2"'='"##"
-    return
-}
-
 ## Visual Functions ##
 # These function creates a visual indicator that a step has happened.
 function header () {
     tput setaf 1; tput bold; echo $@; tput sgr0; return
 }
 function errorheader () {
-    tput setaf 1 1>&2; tput bold 1>&2; echo $@ 1>&2; tput sgr0 1>&2; return
+    tput setaf 1 1>&2; tput bold 1>&2; echo "ERROR:" $@ 1>&2; tput sgr0 1>&2; return
+}
+
+## Configuration reading ##
+function param() { 
+    if [ -z "$1" ] || [ ! -f "$1" ] || [ -z "$2" ]; then
+        errorheader "Configuration file not specified or doesn't exist."
+        exit 1;
+    fi
+    export "$2"="$(grep '^'"$2"'=' "$1" | sed 's#^'"$2"'='"##")"
+    return
+}
+
+## Help ##
+# We expect each script to declare its own helptext functions.
+
+## Logging ##
+function logstatement() {
+    if [ -z "$logfile" ]; then
+        errorheader "Need the logfile environment variable exported."
+        exit 1
+    fi
+    if [ -z "$1" ]; then
+        errorheader "Need a statement to log."
+        exit 1
+    fi
+    echo "$1" | tee -a "$logfile"
+    return
 }
 
 ## Storage functions ##
