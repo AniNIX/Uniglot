@@ -101,7 +101,7 @@ function qaunittest {
     fnargs="$4"
     input="input""$inputcount"
     cmd="$(printf "source /usr/local/src/SharedLibraries/Bash/header;%s '%s' '%s' %s >/dev/null;echo \$%s" "$function" "$input" "Input" "$fnargs" "$input")"
-    export $input="$(bash -c "$cmd" <<EOM
+    $input="$(bash -c "$cmd" <<EOM
 $(echo -ne $userinput)
 EOM
 )"
@@ -188,4 +188,59 @@ function prompt-num-var() {
         inputtime=$(($inputtime + 1))
     done
     return 0;
+}
+
+## Torrenting functions ##
+# Configure the torrenting engine.
+function configuretorrent {
+    if [ ! -f "$1" ]; then
+        errorheader "Torrent configuration file not found."
+        exit 1;
+    fi
+    param "$1" torrentengine
+    param "$1" torrentterms
+    param "$1" magnetposition
+    param "$1" torrentdebugging
+    param "$1" searchunifier
+    if [ "$torrentdebugging" == "true" ]; then
+        echo '<'$torrentengine'>'
+        echo '<'$torrentterms'>'
+        echo '<'$magnetposition'>'
+        echo '<'$torrentdebugging'>'
+        echo '<'$searchunifier'>'
+    fi
+    export torrentconfigured="true"
+}
+# Get a magnet link for downloads.
+function getmagnetlink {
+    if [ -z "$1" ]; then
+        errorheader "Need search terms";
+        exit 1;
+    fi
+    if [ "$torrentconfigured" != "true" ]; then
+        errorheader Torrent not configured.
+        exit 1;
+    fi 
+    searchstring="$(echo "$1" | sed "s/ /$searchunifier/g")"
+    searchlink="$(printf "$torrentengine" "$searchstring")"
+    searchresult="$(wget -q -O - "$searchlink" | bash -c "$torrentterms")"
+    magnetlink="$(wget -q -O - "$searchresult" | grep 'magnet:?' | cut -f $magnetposition -d \")"
+    if [ $torrentdebugging == "true" ]; then
+        echo '<'$searchstring'>'
+        echo '<'$searchlink'>'
+        echo '<'$searchresult'>'
+        echo '<'$magnetlink'>'
+    fi
+}
+# Download a link
+function torrentlink {
+    if [ ! -d "$downloaddir" ]; then
+        errorheader "Cannot download -- downloaddir does not exist"
+        exit 1;
+    fi
+    if [ ! -z "$magnetlink" ]; then
+        /usr/bin/transmission-cli -d 1000 -u 1 -er -w "$downloaddir" -b -f "/usr/local/bin/wolfpack-stoptorrent" "$magnetlink"
+        rm -Rf ~/.config/transmission/resume/*
+        rm -Rf ~/.config/transmission/torrents/*
+    fi
 }
