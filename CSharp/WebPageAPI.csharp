@@ -20,7 +20,7 @@ namespace AniNIX.Shared {
         /// <param name="pageURL"> the webpage whose title we should get</param>
         /// <returns> the webpage source </returns>
         public static string GetPage(String pageURL) {
-            return ExecuteCommand.Run(String.Format("/usr/bin/curl -s {0}",pageURL));
+            return ExecuteCommand.Run(String.Format("/usr/bin/curl -s --max-time 5 {0}",pageURL));
         }
 
         /// <summary>

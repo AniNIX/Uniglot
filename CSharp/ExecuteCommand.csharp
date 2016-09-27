@@ -7,6 +7,9 @@ using System.Collections.Generic;
 namespace AniNIX.Shared {
 
     public static class ExecuteCommand {
+
+        // Allow anyone using this class to modify the timeout at will.
+        public static int TimeOut = 5000;
         
         /// <summary>
         /// This method allows a CSharp app to execute a command on the OS.
@@ -39,7 +42,10 @@ namespace AniNIX.Shared {
             //Add input and read output.
             proc.StandardInput.Write(input);
             proc.StandardInput.Close();
-            proc.WaitForExit();
+            proc.WaitForExit(TimeOut);
+            if (!proc.HasExited) {
+                proc.Kill();
+            }
             if (proc.ExitCode != 0) {
                 throw new Exception(String.Format("Failed to exit command with return code {0}",proc.ExitCode));
             }
