@@ -1,0 +1,39 @@
+using System;
+using System.IO;
+using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
+
+namespace AniNIX.Shared {
+
+    public static class WebPageAPI {
+
+        // Thanks to MSDN for this regex.
+        // https://msdn.microsoft.com/en-us/library/ms998267.aspx
+        public static Regex URLRegEx = new Regex(@"(ht|f)tp(s?)\:\/\/[0-9a-zA-Z]([-.\w]*[0-9a-zA-Z])*(:(0-9)*)*(\/?)([a-zA-Z0-9\-\.\?\,\'\/\\\+&amp;%\$#_]*)?"); 
+
+        /// <summary>
+        /// Get a webpage source -- we use this instead of WebClient because Mono doesn't handle SSL well on Linux.
+        /// /usr/bin/curl -s SOMEURL
+        /// </summary>
+        /// <param name="pageURL"> the webpage whose title we should get</param>
+        /// <returns> the webpage source </returns>
+        public static string GetPage(String pageURL) {
+            return ExecuteCommand.Run(String.Format("/usr/bin/curl -s {0}",pageURL));
+        }
+
+        /// <summary>
+        /// Get a webpage title
+        /// Should be equivalent to: 
+        /// /bin/bash -c '/usr/bin/curl -s SOMEURL | perl -l -0777 -ne "print \$1 if /<title.*?>\s*(.*?)\s*<\/title/si"'
+        /// </summary>
+        /// <param name="pageURL"> the webpage whose title we should get</param>
+        /// <returns> the webpage title </returns>
+        public static string GetPageTitle(String pageURL) {
+            string source = GetPage(pageURL);
+            return Regex.Match(source, @"\<title\b[^>]*\>\s*(?<Title>[\s\S]*?)\</title\>", RegexOptions.IgnoreCase).Groups["Title"].Value;
+        }
+
+    }
+}
