@@ -16,20 +16,23 @@ namespace AniNIX.Shared {
         /// <param name="filename">The Config file</param> 
         public Configure(String filename) {
             StreamReader fileReader = new StreamReader(filename);
-            String line = fileReader.ReadLine().Trim();
-            while (line != null) {
+            String line; 
+            while (true) {
+                line = fileReader.ReadLine(); 
+                if (line == null) break;
                 //Ignore comments prefixed with '#'
+                if (line.StartsWith("#")) continue;
                 if (line.IndexOf('#') > 0) {
-                    if (line[0] == '#') continue;
                     lines.Add(line.Split('#')[0].Trim());
                 } else {
-                    lines.Add(line);
+                    lines.Add(line.Trim());
                 }
-                line = fileReader.ReadLine();
             }
             fileReader.Close();
             fileReader.Dispose();
         }
+
+
         /// <summary>
         /// Create a new string dictionary from the named section.
         /// </summary>
@@ -52,6 +55,50 @@ namespace AniNIX.Shared {
                 }
             }
             return foundEntries;
+        }
+        /// <summary>
+        /// If a conf section doesn't use key=value syntax, use this to grab the lines instead.
+        /// </summary>
+        /// <param name="section">The name of the section header</param>
+        /// <returns>New List<String> of read key-value pairs from config section.</returns>
+        public List<String> ReadSectionLines(String section) {
+            List<String> foundEntries = new List<String>();
+            String header = String.Format("[ {0} ]",section);
+            int i = 0, j;
+            // Read to find the header
+            for (i = 0; i < lines.Count; i++) {
+                if (lines[i].Equals(header)) {
+                    i++; 
+                    for (j = i; j < lines.Count && lines[j] != null && !String.IsNullOrWhiteSpace(lines[j]); j++) { 
+                        foundEntries.Add(lines[j]);
+                    }
+                    break; // Most configuration utilities don't allow multiple same-named sections
+                }
+            }
+            return foundEntries;
+        }
+
+        /// <summary>
+        /// Get the headers in a conf file.
+        /// </summary>
+        /// <returns>The headers from a file</returns>
+        public List<String> GetHeaders() {
+            List <String> foundHeaders = new List<String>();
+            int i = 0; 
+            for (i = 0; i < lines.Count; i++) {
+                if (lines[i].Length > 5 && lines[i][0] == '[' && lines[i][lines[i].Length-1] == ']') {
+                    foundHeaders.Add(lines[i].Substring(2,lines[i].Length-4));
+                }
+            }
+            return foundHeaders;
+        }
+
+        /// <summary>
+        /// Get the lines from the file.
+        /// </summary>
+        /// <returns>The lines from the file</returns>
+        public List<String> GetLines() {
+            return this.lines;
         }
 
         /// <summary>
