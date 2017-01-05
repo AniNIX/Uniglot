@@ -90,27 +90,30 @@ function decrementdate() {
 
 ## QA Functions ##
 # This is for QA to test sanitizing input
+if [ -z "$qapadding" ]; then qapadding=40; fi
 function qaunittest {
-    if [ -z "$1" ] || [ -z "$2" ]; then
-        echo Usage: qaunittest function input expectedreturn inputarguments
-        exit
+    unset actualreturn;
+    if [ -z "$1" ]; then
+        echo Usage: qaunittest title function expectedreturn input inputarguments
+        exit 1
     fi
-    function="$1"
-    userinput="$2"
+    header="$1"
+    function="$2"
     expectedreturn="$3"
-    fnargs="$4"
-    input="input""$inputcount"
-    cmd="$(printf "source /usr/local/src/SharedLibraries/Bash/header;%s '%s' '%s' %s >/dev/null;echo \$%s" "$function" "$input" "Input" "$fnargs" "$input")"
-    $input="$(bash -c "$cmd" <<EOM
+    userinput="$4"
+    fnargs="$5"
+    cmd="$(printf "source /usr/local/src/SharedLibraries/Bash/header;%s %s" "$function" "$fnargs")"
+    actualreturn="`bash -c "$cmd" 2>&1 <<EOM
 $(echo -ne $userinput)
 EOM
-)"
-    if [ "${!input}" == "$expectedreturn" ]; then
-        tput setaf 2; printf "PASS "; tput sgr0; echo -- found ${!input} in \'$(echo $cmd | cut -f 2 -d ';')\'
+`"
+    printf "$header";
+    printf ":%*s" $(($qapadding - $(echo $header | wc -c) - 1)) '['
+    if [ "$actualreturn" == "$expectedreturn" ]; then
+        tput setaf 2; printf "PASS"; tput sgr0; printf ']\n';
     else
-        tput setaf 1; printf "FAIL "; tput sgr0; echo -- found ${!input} \(expected $expectedreturn\) in \'$(echo $cmd | cut -f 2 -d ';')\'
+        tput setaf 1; printf "FAIL"; tput sgr0; printf '] -- found %s (expected %s) running '\''%s %s < "%s"'\''\n' "$actualreturn" "$expectedreturn" "$function" "$fnargs" "$userinput";
     fi
-    export inputcount=$(($inputcount + 1))
     return
 }
 
