@@ -20,9 +20,8 @@ namespace AniNIX.Shared {
         /// </summary>
         public static String Run(String command, String input) {
             //Sanitize inputs.
-            if (command.Contains("\'")) {
-                throw new Exception("Command strings cannot include \'.");
-            }
+
+            command = command.Replace("\\'","'").Replace("'","\\'");
 
             //Create process.
             Process proc = new Process();

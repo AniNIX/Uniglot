@@ -15,6 +15,7 @@ namespace AniNIX.Shared {
         /// </summary>
         /// <param name="filename">The Config file</param> 
         public Configure(String filename) {
+            if (!File.Exists(filename)) throw new Exception("File not found.");
             StreamReader fileReader = new StreamReader(filename);
             String line; 
             while (true) {

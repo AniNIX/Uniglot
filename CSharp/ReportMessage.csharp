@@ -26,15 +26,7 @@ namespace AniNIX.Shared {
 				return;
 			}
 
-			if (ReportMessage.verbosity == Verbosity.Quiet) { 
-				return;
-			}
-
-			if (level == Verbosity.Always
-					|| (ReportMessage.verbosity == Verbosity.Verbose && level == Verbosity.Verbose)
-					|| (ReportMessage.verbosity == Verbosity.VeryVerbose && (level == Verbosity.Verbose || level == Verbosity.VeryVerbose))
-					|| (ReportMessage.verbosity == Verbosity.Explicit && (level == Verbosity.Verbose || level == Verbosity.VeryVerbose || level == Verbosity.Explicit))
-			   ) {
+			if ( level <= ReportMessage.verbosity) { 
 				Console.WriteLine(message);
 			}
 

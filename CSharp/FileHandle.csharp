@@ -1,0 +1,103 @@
+using System;
+using System.IO;
+using System.Text;
+using System.Collections.Generic;
+
+namespace AniNIX.Shared {
+
+    public class FileHandle : IDisposable {
+
+        //Private variables
+        private StreamReader _fileHandle = null;
+        private String _path = null;
+        private String _directory = null;
+        private String _file = null;
+
+        /// <summary> 
+        /// Create an object to bundle my usual file operations.
+        /// <summary>
+        public FileHandle(String path) {
+            this._path = path;
+            this._directory = Path.GetDirectoryName(path);
+            this._file = Path.GetFileName(path);
+            this.Reset();
+        }
+
+        /// <summary>
+        /// Read the next line. If already reached EOF, block until line is added.
+        /// </summary>
+        /// <returns>Next line</returns>
+        public String NextLine() {
+            String nextLine = _fileHandle.ReadLine();
+            if (nextLine != null) { 
+                return nextLine;
+            } else {
+                FileSystemWatcher fsw = new FileSystemWatcher(_directory);
+                fsw.Path = _directory;
+                fsw.Filter = _file;
+                fsw.NotifyFilter = NotifyFilters.LastWrite;
+                fsw.WaitForChanged(WatcherChangeTypes.Changed);
+                return _fileHandle.ReadLine();
+            }
+        }
+
+        /// <summary>
+        /// Read all contents of the file.
+        /// </summary>
+        /// <returns>File contents</returns>
+        public String ReadAll() {
+            return _fileHandle.ReadToEnd();
+        }
+
+        /// <summary>
+        /// Close the old handle, if applicable, and open new one.
+        /// </summary>
+        public void Reset() {
+            if (this._fileHandle != null) { 
+                this._fileHandle.Close(); 
+                this._fileHandle.Dispose(); 
+            }
+            this._fileHandle = new StreamReader(_path);
+        }
+
+        /* IDisposable */ 
+        
+        /// <summary>
+        /// Clean up this FileStream, implementing IDisposable
+        /// </summary>
+        public void Dispose() {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        /// <summary>
+        /// Force the GarbageCollector to Dispose if programmer does not
+        /// </summary>
+        ~FileHandle() {
+            Dispose(false);
+            ReportMessage.Log(Verbosity.Error,"Programmer forgot to dispose of FileHandle. Marking for Garbage Collector");
+        }
+
+        // This bool indicates whether we have disposed of this Raven
+        public bool _isDisposed = false;
+
+        /// <summary>
+        /// Dispose of this FileHandle's resources responsibly.
+        /// </summary>
+        private void Dispose(bool disposing) {
+            if (!_isDisposed) {
+                if (disposing) {
+                    _path = null;
+                    _file = null;
+                    _directory = null;
+                }
+                if ( _fileHandle != null) {
+                    _fileHandle.Close();
+                    _fileHandle.Dispose();
+                }
+            }
+            this._isDisposed = true;		
+        }
+
+    }
+}
+

@@ -1,0 +1,82 @@
+using System;
+using System.IO;
+using System.Text;
+using System.Linq;
+using System.Collections.Generic;
+
+namespace AniNIX.Shared {
+
+    public class DirHandle : IDisposable {
+
+        // Internal representations of the directory.
+        private FileSystemWatcher _dirHandle = new FileSystemWatcher();
+        private String _path; 
+
+        /// <summary>
+        /// Create a new DirHandle
+        /// </summary>
+        /// <param name=path>The path to watch</param>
+        /// <param name=filter>Optional filter to control files by -- accepts regex</param>
+        public DirHandle(String path, String filter = "*.*") {
+            this._path=path;
+            _dirHandle.Path = path;
+            _dirHandle.NotifyFilter = NotifyFilters.LastWrite;
+            _dirHandle.Filter = filter;
+            _dirHandle.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Security | NotifyFilters.DirectoryName | NotifyFilters.FileName | NotifyFilters.Size;
+            _dirHandle.EnableRaisingEvents = false;
+        }
+
+        /// <summary>
+        /// Wait until the directory changes
+        /// </summary>
+        public void HoldForChange() {
+            _dirHandle.WaitForChanged(WatcherChangeTypes.Changed);
+            return;
+        }
+
+        /// <summary>
+        /// Get a list of files in the path.
+        /// </summary>
+        /// <returns>A List of strings</returns>
+        public List<String> ListContents() {
+            return new List<String>(Directory.GetFiles(@_path));
+        }
+
+        /* IDisposable */
+
+        /// <summary>
+        /// Clean up this FileStream, implementing IDisposable
+        /// </summary>
+        public void Dispose() {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        /// <summary>
+        /// Force the GarbageCollector to Dispose if programmer does not
+        /// </summary>
+        ~DirHandle() {
+            Dispose(false);
+            ReportMessage.Log(Verbosity.Error,"Programmer forgot to dispose of DirHandle. Marking for Garbage Collector");
+        }
+
+        // This bool indicates whether we have disposed of this Raven
+        public bool _isDisposed = false;
+
+        /// <summary>
+        /// Dispose of this FileHandle's resources responsibly.
+        /// </summary>
+        private void Dispose(bool disposing) {
+            if (!_isDisposed) {
+                if (disposing) {
+                    _path = null;
+                }
+                if ( _dirHandle != null) {
+                    _dirHandle.Dispose();
+                }
+            }
+            this._isDisposed = true;
+        }
+
+    }
+}
+

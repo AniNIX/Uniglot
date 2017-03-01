@@ -227,7 +227,7 @@ function getmagnetlink {
     searchstring="$(echo "$1" | sed "s/ /$searchunifier/g")"
     searchlink="$(printf "$torrentengine" "$searchstring")"
     searchresult="$(wget --timeout=5 -q -O - "$searchlink" | bash -c "$torrentterms")"
-    magnetlink="$(wget --timeout=5 -q -O - "$searchresult" | grep 'magnet:?' | cut -f $magnetposition -d \")"
+    magnetlink="$(wget --timeout=5 -q -O - "$searchresult" | grep 'magnet:?' | cut -f "$magnetposition" -d \"| head -n 1)"
     if [ $torrentdebugging == "true" ]; then
         echo '<'$searchstring'>'
         echo '<'$searchlink'>'
