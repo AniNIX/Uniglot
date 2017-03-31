@@ -42,6 +42,42 @@ namespace AniNIX.Shared {
             return new List<String>(Directory.GetFiles(@_path));
         }
 
+        /// <summary>
+        /// Get the path of the newest file.
+        /// </summary>
+        /// <returns>A List of strings</returns>
+        public String GetNewest() {
+           try {
+                return this.SortedListOfFiles()[0].FullName.Trim();
+            } catch (Exception e) {
+                e.ToString();
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Get the path of the oldest file
+        /// </summary>
+        /// <returns>A List of strings</returns>
+        public String GetOldest() {
+            try {
+                FileInfo[] files = this.SortedListOfFiles();
+                return files[files.Length-1].FullName.Trim();
+            } catch (Exception e) {
+                e.ToString();
+                return null;
+            }
+ 
+        }
+
+        /// <summary>
+        /// Sorts the list of files from newest to oldest.
+        /// </summary>
+        /// <returns>A List of strings</returns>
+        private FileInfo[] SortedListOfFiles() {
+            return (new DirectoryInfo(@_path)).GetFiles().OrderByDescending(p => p.CreationTime).ToArray();
+        }
+
         /* IDisposable */
 
         /// <summary>

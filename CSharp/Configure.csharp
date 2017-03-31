@@ -88,7 +88,8 @@ namespace AniNIX.Shared {
             int i = 0; 
             for (i = 0; i < lines.Count; i++) {
                 if (lines[i].Length > 5 && lines[i][0] == '[' && lines[i][lines[i].Length-1] == ']') {
-                    foundHeaders.Add(lines[i].Substring(2,lines[i].Length-4));
+                    string foundHeader = lines[i].Substring(2,lines[i].Length-4);
+                    if (!foundHeaders.Contains(foundHeader)) foundHeaders.Add(foundHeader);
                 }
             }
             return foundHeaders;

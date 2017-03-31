@@ -8,6 +8,12 @@ function header () {
 function errorheader () {
     tput setaf 1 1>&2; tput bold 1>&2; echo "ERROR:" $@ 1>&2; tput sgr0 1>&2; return
 }
+function infoheader() {
+    tput setaf 3; tput bold; echo $@; tput sgr0; return
+}
+function colorstrip() {
+    perl -e 'use strict; use warnings; while(<>) { s/\e\[[\d;]*m//g; print; }'
+}
 
 ## Configuration reading ##
 function param() { 

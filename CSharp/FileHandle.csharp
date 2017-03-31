@@ -24,21 +24,26 @@ namespace AniNIX.Shared {
         }
 
         /// <summary>
-        /// Read the next line. If already reached EOF, block until line is added.
+        /// Read the next line.
         /// </summary>
         /// <returns>Next line</returns>
         public String NextLine() {
-            String nextLine = _fileHandle.ReadLine();
-            if (nextLine != null) { 
-                return nextLine;
-            } else {
-                FileSystemWatcher fsw = new FileSystemWatcher(_directory);
-                fsw.Path = _directory;
-                fsw.Filter = _file;
-                fsw.NotifyFilter = NotifyFilters.LastWrite;
-                fsw.WaitForChanged(WatcherChangeTypes.Changed);
-                return _fileHandle.ReadLine();
-            }
+            return _fileHandle.ReadLine();
+        }
+
+        /// <summary>
+        /// Get the next new line added to the file.
+        /// </summary>
+        /// <returns>Next new line</returns>
+        public string NextNewLine() {
+            FileSystemWatcher fsw = new FileSystemWatcher(_directory);
+            fsw.Path = _directory;
+            fsw.Filter = _file;
+            fsw.NotifyFilter = NotifyFilters.LastWrite;
+            fsw.WaitForChanged(WatcherChangeTypes.Changed);
+            // Optionally, this could be accomplished with http://stackoverflow.com/questions/452902/how-to-read-a-text-file-reversely-with-iterator-in-c-sharp
+            // Instead, we are using a syscall for sake of codespace and testing.
+            return ExecuteCommand.Run(String.Format("tail -n 1 {0}",this._path));
         }
 
         /// <summary>
@@ -61,7 +66,7 @@ namespace AniNIX.Shared {
         }
 
         /* IDisposable */ 
-        
+
         /// <summary>
         /// Clean up this FileStream, implementing IDisposable
         /// </summary>
