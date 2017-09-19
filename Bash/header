@@ -1,5 +1,8 @@
 #!/bin/bash
 
+## Vars ##
+pullcmd='wget --timeout=5 -q -O -'
+
 ## Visual Functions ##
 # These function creates a visual indicator that a step has happened.
 function header () {
@@ -232,24 +235,17 @@ function getmagnetlink {
     fi 
     searchstring="$(echo "$1" | sed "s/ /$searchunifier/g")"
     searchlink="$(printf "$torrentengine" "$searchstring")"
-    searchresult="$(wget --timeout=5 -q -O - "$searchlink" | bash -c "$torrentterms")"
-    magnetlink="$(wget --timeout=5 -q -O - "$searchresult" | grep 'magnet:?' | cut -f "$magnetposition" -d \"| head -n 1)"
+    /bin/bash -c "$pullcmd "$searchlink" &>/dev/null"
+    if [ $? -ne 0 ]; then
+        errorheader Could not pull search results.
+        exit 1
+    fi
+    searchresult="$(/bin/bash -c "$pullcmd $searchlink" | bash -c "$torrentterms")"
+    magnetlink="$(/bin/bash -c "$pullcmd $searchresult" | grep 'magnet:?' | cut -f "$magnetposition" -d \"| head -n 1)"
     if [ $torrentdebugging == "true" ]; then
         echo '<'$searchstring'>'
         echo '<'$searchlink'>'
         echo '<'$searchresult'>'
         echo '<'$magnetlink'>'
-    fi
-}
-# Download a link
-function torrentlink {
-    if [ ! -d "$downloaddir" ]; then
-        errorheader "Cannot download -- downloaddir does not exist"
-        exit 1;
-    fi
-    if [ ! -z "$magnetlink" ]; then
-        /usr/bin/transmission-cli -d 1000 -u 1 -er -w "$downloaddir" -b -f "/usr/local/bin/wolfpack-stoptorrent" "$magnetlink"
-        rm -Rf ~/.config/transmission/resume/*
-        rm -Rf ~/.config/transmission/torrents/*
     fi
 }
