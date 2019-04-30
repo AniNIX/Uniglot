@@ -1,5 +1,5 @@
 # Maintainer: Shikoba Kage <darkfeather@aninix.net>
-pkgname=aninix-shared-libraries
+pkgname=uniglot
 pkgver=0.1.e7c96f9
 pkgver() {
     printf "0.1.""$(git rev-parse --short HEAD)"
