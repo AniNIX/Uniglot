@@ -6,16 +6,16 @@ pkgver() {
 }
 pkgrel=1
 epoch=
-pkgdesc="AniNIX::Foundation/SharedLibraries \\\\ Shared code libraries that all the AniNIX projects should use -- this should reduce error and code duplication"
+pkgdesc="AniNIX::Uniglot \\\\ Shared code libraries that all the AniNIX projects should use -- this should reduce error and code duplication"
 arch=("x86_64")
-url="https://aninix.net/foundation/SharedLibraries"
+url="https://aninix.net/foundation/Uniglot"
 license=('custom')
 groups=()
 depends=('mono>=5.0.0' 'curl' 'grep' 'bash>=4.4' 'git>=2.13')
 makedepends=('make>=4.2')
 checkdepends=()
 optdepends=()
-provides=('aninix-shared-libraries')
+provides=('uniglot')
 conflicts=()
 replaces=()
 backup=()
