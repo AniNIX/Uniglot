@@ -1,4 +1,4 @@
-installdir = ${pkgdir}/opt/aninix/SharedLibraries/
+installdir = ${pkgdir}/opt/aninix/Uniglot/
 targets = Bash C CSharp
 
 compile: 

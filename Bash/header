@@ -111,7 +111,7 @@ function qaunittest {
     expectedreturn="$3"
     userinput="$4"
     fnargs="$5"
-    cmd="$(printf "source /usr/local/src/SharedLibraries/Bash/header;%s %s" "$function" "$fnargs")"
+    cmd="$(printf "source /opt/aninix/Uniglot/Bash/header;%s %s" "$function" "$fnargs")"
     actualreturn="`bash -c "$cmd" 2>&1 <<EOM
 $(echo -ne $userinput)
 EOM
