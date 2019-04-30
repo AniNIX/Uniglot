@@ -20,6 +20,7 @@ namespace AniNIX.Shared {
             String line; 
             while (true) {
                 line = fileReader.ReadLine(); 
+                ReportMessage.Log(Verbosity.Verbose,String.Format("Read line: {0}",line));
                 if (line == null) break;
                 //Ignore comments prefixed with '#'
                 if (line.StartsWith("#")) continue;
@@ -57,6 +58,7 @@ namespace AniNIX.Shared {
             }
             return foundEntries;
         }
+
         /// <summary>
         /// If a conf section doesn't use key=value syntax, use this to grab the lines instead.
         /// </summary>
