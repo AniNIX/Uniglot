@@ -1,23 +1,22 @@
-# Maintainer: Shikoba Kage <darkfeather@aninix.net>
-pkgname=uniglot
-pkgver=0.1.e7c96f9
-pkgver() {
-    printf "0.1.""$(git rev-parse --short HEAD)"
-}
-pkgrel=1
-epoch=
-pkgdesc="AniNIX::Uniglot \\\\ Shared code libraries that all the AniNIX projects should use -- this should reduce error and code duplication"
-arch=("x86_64")
-url="https://aninix.net/foundation/Uniglot"
-license=('custom')
-groups=()
-depends=('mono>=5.0.0' 'curl' 'grep' 'bash>=4.4' 'git>=2.13')
+depends=('bash>=4.4')
 makedepends=('make>=4.2')
 checkdepends=()
 optdepends=()
-provides=('uniglot')
+pkgname="$(git config remote.origin.url | rev | cut -f 1 -d '/' | rev | sed 's/.git$//')"
+pkgver="$(git describe --tag --abbrev=0)"."$(git rev-parse --short HEAD)"
+pkgrel=1
+pkgrel() { 
+    echo $(( `git log "$(git describe --tag --abbrev=0)"..HEAD | grep -c commit` + 1 ))
+}
+epoch="$(git log | grep -c commit)"
+pkgdesc="$(head -n 1 README.md)"
+arch=("x86_64")
+url="$(git config remote.origin.url | sed 's/.git$//')"
+license=('custom')
+groups=()
+provides=("${pkgname}")
 conflicts=()
-replaces=()
+replaces=("${pkgname,,}", "aninix-${pkgname,,}")
 backup=()
 options=()
 install=
@@ -36,7 +35,8 @@ build() {
 }
 
 check() {
-	printf 'quit\n\n' | make -C "${srcdir}/.." test
+    chmod -R u+r ../pkg
+	make -C .. test
 }
 
 package() {

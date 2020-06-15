@@ -6,7 +6,7 @@ compile:
 
 install: compile
 	mkdir -p ${installdir}
-	for target in ${targets}; do rsync -avzl "$$target" ${installdir}; done
+	for target in ${targets}; do rsync -avzzl "$$target" ${installdir}; done
 	make checkperm
 
 clean:
