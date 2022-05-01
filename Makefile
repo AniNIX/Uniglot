@@ -1,5 +1,5 @@
 installdir = ${pkgdir}/opt/aninix/Uniglot/
-targets = Bash C CSharp
+targets = Bash C CSharp Hooks
 
 compile: 
 	@echo Nothing to compile.
@@ -7,6 +7,8 @@ compile:
 install: compile
 	mkdir -p ${installdir}
 	for target in ${targets}; do rsync -avzzl "$$target" ${installdir}; done
+	mkdir -p ${pkgdir}/usr/local/bin
+	install -m 0755 -o root -g root bin/uniglot-clone ${pkgdir}/usr/local/bin
 	make checkperm
 
 clean:
@@ -16,11 +18,11 @@ uninstall:
 	rm -Rf ${installdir} 
 
 test: 
-	@echo Nothing to do.
+	python3 -m pytest
 
 checkperm: 
-	chmod -R 0755 ${installdir}
-	chown root:root ${installdir}
+	chmod -R 0755 ${installdir} ${pkgdir}/usr/local/bin/uniglot-clone
+	chown root:root ${installdir} ${pkgdir}/usr/local/bin/uniglot-clone
 
 diff: ${INSTALLFIR}
 	diff -rc . ${installdir}

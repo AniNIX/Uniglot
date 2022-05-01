@@ -1,5 +1,5 @@
 depends=('bash>=4.4')
-makedepends=('make>=4.2')
+makedepends=('make>=4.2','gcc','mono')
 checkdepends=()
 optdepends=()
 pkgname="$(git config remote.origin.url | rev | cut -f 1 -d '/' | rev | sed 's/.git$//')"

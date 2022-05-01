@@ -250,17 +250,18 @@ function getmagnetlink {
     fi
 }
 
-### AniNIX Foundation help ###
+### AniNIX/Foundation help ###
 
 function findaninixcheckouts {
-    find /usr/local/src/ -type f -name config -exec egrep -l 'url[[:space:]]=[[:space:]]/srv/foundation|url[[:space:]]=[[:space:]]https://aninix.net|url[[:space:]]=[[:space:]]([a-zA-Z0-9])+@aninix.net' {} \; 2>/dev/null | sed 's#.git/config$##'
+    ### Find git checkouts in $pwd that are from AniNIX/Foundation
+    find . -type f -name config -exec egrep -l 'url[[:space:]]=[[:space:]]/srv/foundation|url[[:space:]]=[[:space:]]https://(foundation.)aninix.net|url[[:space:]]=[[:space:]]([a-zA-Z0-9])+@(foundation.)aninix.net' {} \; 2>/dev/null | sed 's#.git/config$##'
 }
 
 function aninixgitstatus {
     for i in `findaninixcheckouts`; do
-        infoheader BEGIN REPORT for "$i"
-        git -C "$i" status
-        infoheader END REPORT
-        echo
+        status="$(git -C "$i" status)"
+        if [ -n "$status" ]; then
+            echo "$i" has work in flight.
+        fi
     done
 }

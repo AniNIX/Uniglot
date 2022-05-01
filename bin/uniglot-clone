@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# File: uniglot-clone
+#
+# Description: This is a convenience script to ensure our hooks are standardized.
+#
+# Package: AniNIX/Uniglot
+# Copyright: WTFPL
+#
+# Author: DarkFeather <ircs://aninix.net:6697/DarkFeather>
+
+function uniglotClone() {
+    target="$1"
+    git-clone "$target"
+    clone="$(basename "$1" | sed 's/.git$//')"
+    cd "$clone"
+}
+
+
+### usage
+### param retcode: what to return
+function usage() {
+    retcode="$1"
+    echo "Usage: $0 # Update the current clone"
+    echo "       $0 -t target # Clone the target and set hooks"
+    echo "       $0 -h # Help"
+    echo Add -v for verbosity.
+}
+
+### Main
+if [ `basename "$0"` == "uniglot-clone" ]; then
+    while getopts 'ht:v' OPTION; do
+        case "$OPTION" in
+            h) echo AniNIX/Uniglot git-clone standardization; usage 0 ;;
+            t) target="$OPTARG" ;;
+            v) set -x ;;
+            *) usage 1 ;;
+        esac
+    done
+
+    # Sanity
+    if [ ! -d .git ]; then
+        echo "This should be run from the root of the clone."
+        exit 2
+    fi
+
+    # Standardizations
+    if git config remote.origin.url | grep -q AniNIX/Uniglot; then
+        git config core.hooksPath $PWD/Hooks
+    else
+        git config core.hooksPath /opt/aninix/Uniglot/Hooks
+    fi
+fi

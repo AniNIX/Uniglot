@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Borrowing from https://github.com/syncier/pre-commit-hooks-jumanjihouse/blob/master/pre_commit_hooks/protect-first-parent
+
+# Find the correct reference, or fallback to HEAD's abbrev-ref
+base="$(
+    git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null \
+        || git branch -avv | awk '/->/ {print $NF}' 2>/dev/null \
+        || :
+)"
+if [ -z "$base" ]; then base="$(git rev-parse --abbrev-ref HEAD)"; fi
+
+firstParent="$(git show-ref -s "${base}")"
+
+if git rev-list --first-parent "${base}^".. | grep -q "^${firstParent}$"; then
+    exit 0
+else
+    echo Foxtrot detected -- please either rebase or '`git reset --soft`' to recreate your commit.
+    exit 1
+fi

@@ -1,0 +1,15 @@
+using AniNIX.Shared;
+
+namespace AniNIX.Uniglot {
+
+    /// Test class
+    public class Test {
+
+        /// <summary>
+        /// The default function
+        /// </summary>
+        static int Main(string[] args) {
+            return 0;
+        }
+    }
+}

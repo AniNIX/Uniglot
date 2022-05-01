@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Check each commit
+while read oldrev newrev refname; do
+
+    # Thanks to https://blog.developer.atlassian.com/stop-foxtrots-now/ for the inspiration
+    if [ "$refname" == "refs/heads/main" ]; then
+       match=`git log --first-parent --pretty='%H %P' $oldrev..$newrev |
+         grep $oldrev |
+         awk '{ print $2 }'`
+       if [ "$oldrev" != "$match" ]; then
+         echo "Foxtrot detected. Please `git rebase origin/main`."
+         exit 1
+       fi
+    fi
+
+done
