@@ -1,0 +1,114 @@
+#!/bin/bash
+
+# File: home-git
+#
+# Description: This file allows scripted support for user support repositories in a Git instance.
+# https://aninix.net/AniNIX/Wiki/src/branch/main/Articles/User_Support_Repositories.md
+#
+# Package: AniNIX/Uniglot
+# Copyright: WTFPL
+#
+# Author: DarkFeather <ircs://aninix.net:6697/DarkFeather>
+
+function InitializeGitIgnore() {
+    ### Seed the .gitignore
+
+    cat > ~/.gitignore <<EOM
+# Ignore normal files
+*
+!/.bash_profile
+!/.bashrc
+!/bin**
+!/.git[a-z]*
+!/.githooks**
+!/.gpg-id
+!/.gnupg**
+/.gnupg/.#*
+/.gnupg/*.lock
+/.gnupg/random_seed
+!/password-store**
+/password-store/*.password
+/password-store/*.lock
+!/.profile
+!/.rclone.conf
+!/.src-maintenance.conf
+!/.ssh**
+!/.tmux.conf
+!/.vimrc
+!/.weechat
+!/.weechat/**
+!/.wpa_supplicant**
+!/.config/
+/.config/*
+!/.config/systemd**
+/.config/systemd/user/default.target.wants**
+/.config/systemd/user/timers.target.wants**
+/.config/systemd/user/multi-user.target.wants**
+!/.config/xfce4/
+!/.config/xfce4/xfconf/
+!/.config/xfce4/xfconf/xfce-perchannel-xml**
+!/ssh
+/.weechat/weechat.log
+/.weechat/logs
+.weechat/script/plugins.xml.gz
+EOM
+}
+
+function InitializeHome() {
+    ### Initialize a clone
+    # param target: the repo URL
+    target="$1"
+    if [ "$PWD" != "$HOME" ]; then
+        read -p "You are not currently in your home directory -- are you sure you want to use this folder? [y/n]" answer
+        if [ "$answer" != 'y' ]; then
+            exit 0;
+        fi
+    fi
+    git init .
+    git config remote.origin.url "$target"
+    InitializeGitIgnore
+    git add -A
+    git status
+    echo
+    echo 'If this status looks right, run `git commit && git push`.'
+    exit 0
+}
+
+function CloneToHome() {
+    ### Reset home from a clone
+    # param target: the repo URL
+    target="$1"
+    git clone --bare "$target" .git
+    git config --local --bool core.bare false
+    git reset --hard
+    exit 0
+}
+
+function Usage() {
+    ### Usage
+    # param retcode: return code
+    retcode="$1"
+    echo "Usage: $0 -h"
+    echo "       $0 -c \$targeturl # Clone home from URL"
+    echo "       $0 -i \$targeturl # Initialize home to send to URL"
+    echo "       $0 -I # Reinitialize the .gitignore and show staged delta"
+    exit "$retcode"
+}
+
+### Main
+if [ "$(basename $0)" == "home-git" ]; then
+
+    # Parse options
+    while getopts 'c:hi:Iv' OPTION; do
+        case "$OPTION" in
+            c) CloneToHome "${OPTARG}" ;;
+            h) echo "Control home via user support repositories."; Usage 0 ;;
+            i) InitializeHome "${OPTARG}" ;;
+            I) InitializeGitIgnore; git add -A; git status ;;
+            v) set -x ;;
+        esac
+    done
+
+    # Catchall
+    Usage 1
+fi
