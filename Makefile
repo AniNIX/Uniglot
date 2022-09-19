@@ -1,26 +1,30 @@
 installdir = ${pkgdir}/opt/aninix/Uniglot/
 targets = Bash C CSharp Hooks
 
-compile: 
+compile:
 	@echo Nothing to compile.
 
 install: compile
 	mkdir -p ${installdir}
 	for target in ${targets}; do rsync -avzzl "$$target" ${installdir}; done
+	mkdir "${installdir}/pacman/"
+	cp PKGBUILD "${installdir}/pacman/"
+	mkdir "${installdir}/make/"
+	cp Makefile "${installdir}/make/"
 	mkdir -p ${pkgdir}/usr/local/bin
-	install -m 0755 -o root -g root bin/uniglot-clone ${pkgdir}/usr/local/bin
+	find bin/ -type f -exec install -m 0755 -o root -g root {} "${pkgdir}/usr/local/bin" \;
 	make checkperm
 
 clean:
-	for i in `cat .gitignore`; do rm -Rf $$i; done
-	
-uninstall: 
-	rm -Rf ${installdir} 
+	git clean -fdX
 
-test: 
+uninstall:
+	rm -Rf ${installdir}
+
+test:
 	python3 -m pytest
 
-checkperm: 
+checkperm:
 	chmod -R 0755 ${installdir} ${pkgdir}/usr/local/bin/uniglot-clone
 	chown root:root ${installdir} ${pkgdir}/usr/local/bin/uniglot-clone
 

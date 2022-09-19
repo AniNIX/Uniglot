@@ -38,6 +38,11 @@ if [ `basename "$0"` == "uniglot-clone" ]; then
         esac
     done
 
+    if [ -n "$target" ]; then
+        uniglotClone "$target"
+        cd "$(basename "$target" | sed 's/.git$//')"
+    fi
+
     # Sanity
     if [ ! -d .git ]; then
         echo "This should be run from the root of the clone."
@@ -45,9 +50,13 @@ if [ `basename "$0"` == "uniglot-clone" ]; then
     fi
 
     # Standardizations
+
+    # If the repo is Uniglot...
     if git config remote.origin.url | grep -q AniNIX/Uniglot; then
+        # Set the hooks to the local directory
         git config core.hooksPath $PWD/Hooks
     else
+        # Otherwise set it to the global hooks
         git config core.hooksPath /opt/aninix/Uniglot/Hooks
     fi
 fi
