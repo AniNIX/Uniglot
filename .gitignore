@@ -3,3 +3,4 @@ src/
 *.tar.xz
 *.tar.zst
 tests/*.out
+*/__pycache__/**
