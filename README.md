@@ -12,3 +12,9 @@ The following executables are available:
 
 * `uniglot-clone` ensures that when repos are cloned, they are attached to the standard Uniglot hooks.
 * `home-git` is support for [User Support Repositories](https://aninix.net/AniNIX/Wiki/src/branch/main/Articles/User_Support_Repositories.md).
+
+# Hooks
+
+The Hooks folder includes a standard pre-commit and pre-receive that will be enforced across repos. These pre-commit and pre-receive will enforce the contents of `Hooks/scripts.d`. This allows us to enforce standards of quality across the ecosystem.
+
+Notably, each repo that subscribes to this enforcement can also commit their own standards in addition to global standards. Python tests should go in a folder called `tests/` and scripts in a folder called `precommit-hooks/`. These will be run in addition to the global hooks.

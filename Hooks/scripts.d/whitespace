@@ -2,6 +2,11 @@
 
 # Sourced from https://github.com/git/git/blob/master/templates/hooks--pre-commit.sample
 
+if git ls-files | xargs egrep -irl '\s\+$' ; then
+    echo The above lines have trailing whitespace. Run "sed -i 's/\s\+$//'" on the affected files.
+    exit 1
+fi
+
 if git rev-parse --verify HEAD >/dev/null 2>&1
 then
 	against=HEAD
@@ -13,9 +18,6 @@ fi
 # Redirect output to stderr.
 exec 1>&2
 
+
 # If there are whitespace errors, print the offending file names and fail.
-git diff-index --check --cached $against --
-if [ $? -ne 0 ]; then
-    echo The above lines have trailing whitespace. Run "sed -i 's/\s\+$//'" on the affected files.
-    exit 1
-fi
+exec git diff-index --check --cached $against --
