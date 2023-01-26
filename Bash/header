@@ -6,13 +6,25 @@ pullcmd='wget --timeout=5 -q -O -'
 ## Visual Functions ##
 # These function creates a visual indicator that a step has happened.
 function header () {
-    tput setaf 1; tput bold; echo $@; tput sgr0; return
+    if [[ "$TERM" =~ xterm* ]]; then
+        tput setaf 1; tput bold; echo $@; tput sgr0; return
+    else
+        echo $@;
+    fi
 }
 function errorheader () {
-    tput setaf 1 1>&2; tput bold 1>&2; echo "ERROR:" $@ 1>&2; tput sgr0 1>&2; return
+    if [[ "$TERM" =~ xterm* ]]; then
+        tput setaf 1 1>&2; tput bold 1>&2; echo "ERROR:" $@ 1>&2; tput sgr0 1>&2; return
+    else
+        echo $@;
+    fi
 }
 function infoheader() {
-    tput setaf 3; tput bold; echo $@; tput sgr0; return
+    if [[ "$TERM" =~ xterm* ]]; then
+        tput setaf 3; tput bold; echo $@; tput sgr0; return
+    else
+        echo $@;
+    fi
 }
 function colorstrip() {
     perl -e 'use strict; use warnings; while(<>) { s/\e\[[\d;]*m//g; print; }'
@@ -116,14 +128,14 @@ function qaunittest {
 $(echo -ne $userinput)
 EOM
 `"
-    printf "$header";
-    printf ":%*s" $(($qapadding - $(echo $header | wc -c) - 1)) '['
-    if [ "$actualreturn" == "$expectedreturn" ]; then
-        tput setaf 2; printf "PASS"; tput sgr0; printf ']\n';
-    else
-        tput setaf 1; printf "FAIL"; tput sgr0; printf '] -- found %s (expected %s) running '\''%s %s < "%s"'\''\n' "$actualreturn" "$expectedreturn" "$function" "$fnargs" "$userinput";
-    fi
-    return
+printf "$header";
+printf ":%*s" $(($qapadding - $(echo $header | wc -c) - 1)) '['
+if [ "$actualreturn" == "$expectedreturn" ]; then
+    tput setaf 2; printf "PASS"; tput sgr0; printf ']\n';
+else
+    tput setaf 1; printf "FAIL"; tput sgr0; printf '] -- found %s (expected %s) running '\''%s %s < "%s"'\''\n' "$actualreturn" "$expectedreturn" "$function" "$fnargs" "$userinput";
+fi
+return
 }
 
 ## Prompt functions ##
@@ -133,73 +145,73 @@ EOM
 export maxattempts=5
 # This function will prompt the user for variable 1 with string 2 until it gets a nonempty answer.
 function prompt-var() {
-    if [ -z "$1" ] || [ -z "$2" ]; then
-        echo "Need a variable name (1) and a prompt string (2)"
-        return 1;
-    fi
-    inputtime="0"
-    #echo "$0 is checking for $1 -- currently set to <${!1}>"
-    while [ -z "${!1}" ] || (echo "${!1}" | grep -v -E '^[-0-9a-zA-Z ,.@]{1,50}$' &>/dev/null); do
-        printf "%s: " "$2";
-        read $1;
-        if [ "${!1}" == "OPT" ] || [ $inputtime -gt $maxattempts ]; then exit 0; fi
-        inputtime=$(($inputtime + 1))
-    done
-    return 0;
+if [ -z "$1" ] || [ -z "$2" ]; then
+    echo "Need a variable name (1) and a prompt string (2)"
+    return 1;
+fi
+inputtime="0"
+#echo "$0 is checking for $1 -- currently set to <${!1}>"
+while [ -z "${!1}" ] || (echo "${!1}" | grep -v -E '^[-0-9a-zA-Z ,.@]{1,50}$' &>/dev/null); do
+    printf "%s: " "$2";
+    read $1;
+    if [ "${!1}" == "OPT" ] || [ $inputtime -gt $maxattempts ]; then exit 0; fi
+    inputtime=$(($inputtime + 1))
+done
+return 0;
 }
 
 # This function will prompt the user for variable 1 with string 2 until it gets a nonempty answer.
 function prompt-var-len() {
-    if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
-        echo "Need a variable name (1), prompt string (2), and a length (3)"
-        return 1;
-    fi
-    inputtime="0"
-    #echo "$0 is checking for $1 -- currently set to <${!1}>"
-    while [ -z "${!1}" ] || (echo "${!1}" | grep -v -E "^[0-9a-zA-Z]{1,$3}$" &>/dev/null); do
-        printf "%s (Max length: %s): " "$2" "$3";
-        read $1;
-        if [ "${!1}" == "OPT" ] || [ $inputtime -gt $maxattempts ]; then exit 0; fi
-        inputtime=$(($inputtime + 1))
-    done
-    return 0;
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+    echo "Need a variable name (1), prompt string (2), and a length (3)"
+    return 1;
+fi
+inputtime="0"
+#echo "$0 is checking for $1 -- currently set to <${!1}>"
+while [ -z "${!1}" ] || (echo "${!1}" | grep -v -E "^[0-9a-zA-Z]{1,$3}$" &>/dev/null); do
+    printf "%s (Max length: %s): " "$2" "$3";
+    read $1;
+    if [ "${!1}" == "OPT" ] || [ $inputtime -gt $maxattempts ]; then exit 0; fi
+    inputtime=$(($inputtime + 1))
+done
+return 0;
 }
 # This function will prompt the user for variable 1 with string 2 until it gets a nonempty answer.
 function prompt-password() {
-    if [ -z "$1" ] || [ -z "$2" ]; then
-        echo "Need a variable name (1) and a prompt string (2)"
-        return 1;
-    fi
-    inputtime="0"
-    #echo "$0 is checking for $1 -- currently set to <${!1}>"
-    while [ -z "${!1}" ] || [ $(echo ${!1} | wc -c) -gt 50 ]; do
-        printf "%s: " "$2";
-        read -s $1;
-        if [ "${!1}" == "OPT" ] || [ $inputtime -gt $maxattempts ]; then exit 0; fi
-        echo
-        inputtime=$(($inputtime + 1))
-    done
-    return 0;
+if [ -z "$1" ] || [ -z "$2" ]; then
+    echo "Need a variable name (1) and a prompt string (2)"
+    return 1;
+fi
+inputtime="0"
+#echo "$0 is checking for $1 -- currently set to <${!1}>"
+while [ -z "${!1}" ] || [ $(echo ${!1} | wc -c) -gt 50 ]; do
+    printf "%s: " "$2";
+    read -s $1;
+    if [ "${!1}" == "OPT" ] || [ $inputtime -gt $maxattempts ]; then exit 0; fi
+    echo
+    inputtime=$(($inputtime + 1))
+done
+return 0;
 }
 #This function will prompt the user for a variable 1 with string 2 until it gets an answer between min 3 and max 4.
 function prompt-num-var() {
-    if [ -z "$1" ] || [ -z "$2" ] || [ "$3" -ne "$3" ] || [ "$4" -le "$3" ]; then
-        echo "Need a variable name (1), prompt string (2), min (3), and max (4)";
-        echo 1: $1;
-        echo 2: $2;
-        echo 3: $3;
-        echo 4: $4;
-        return 1;
-    fi
-    inputtime="0"
-    #echo "$0 is checking for $1 -- currently set to <${!1}>"
-    while [ -z "${!1}" ] || (echo "${!1}" | grep -v -E "^[0-9]{1,8}$" &>/dev/null) || [ "${!1}" -lt "$3" ] || [ "${!1}" -gt "$4" ]; do
-        printf "%s (between %s and %s): " "$2" "$3" "$4";
-        read $1;
-        if [ "${!1}" == "OPT" ] || [ $inputtime -gt $maxattempts ]; then exit 0; fi
-        inputtime=$(($inputtime + 1))
-    done
-    return 0;
+if [ -z "$1" ] || [ -z "$2" ] || [ "$3" -ne "$3" ] || [ "$4" -le "$3" ]; then
+    echo "Need a variable name (1), prompt string (2), min (3), and max (4)";
+    echo 1: $1;
+    echo 2: $2;
+    echo 3: $3;
+    echo 4: $4;
+    return 1;
+fi
+inputtime="0"
+#echo "$0 is checking for $1 -- currently set to <${!1}>"
+while [ -z "${!1}" ] || (echo "${!1}" | grep -v -E "^[0-9]{1,8}$" &>/dev/null) || [ "${!1}" -lt "$3" ] || [ "${!1}" -gt "$4" ]; do
+    printf "%s (between %s and %s): " "$2" "$3" "$4";
+    read $1;
+    if [ "${!1}" == "OPT" ] || [ $inputtime -gt $maxattempts ]; then exit 0; fi
+    inputtime=$(($inputtime + 1))
+done
+return 0;
 }
 
 ## Torrenting functions ##
