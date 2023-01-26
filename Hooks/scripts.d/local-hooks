@@ -1,8 +1,11 @@
+#!/bin/bash
 # This script ensures that repos can commit personal hooks in the ./precommit-hooks folder.
 
-for script in `find precommit-hooks -type f`; do
-    if ! bash "$script"; then
-        echo "Local script $script failed checks."
-        exit 1
-    fi
-done
+if [ -d precommit-hooks ]; then
+    for script in `find precommit-hooks -type f`; do
+        if ! bash "$script"; then
+            echo "Local script $script failed checks."
+            exit 1
+        fi
+    done
+fi

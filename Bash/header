@@ -47,7 +47,7 @@ function logstatement() {
 
 ## Storage functions ##
 function addfs() {
-    if [ -z "$1" ] || [ -z "$2" ] || (echo "$3" | egrep -v -E '^[0-9]{1,4}'); then
+    if [ -z "$1" ] || [ -z "$2" ] || (echo "$3" | grep -v -E '^[0-9]{1,4}'); then
         echo "Need a filesystem(1), volume group path(2), and size (3)"
         return
     fi
@@ -139,7 +139,7 @@ function prompt-var() {
     fi
     inputtime="0"
     #echo "$0 is checking for $1 -- currently set to <${!1}>"
-    while [ -z "${!1}" ] || (echo "${!1}" | egrep -v '^[-0-9a-zA-Z ,.@]{1,50}$' &>/dev/null); do
+    while [ -z "${!1}" ] || (echo "${!1}" | grep -v -E '^[-0-9a-zA-Z ,.@]{1,50}$' &>/dev/null); do
         printf "%s: " "$2";
         read $1;
         if [ "${!1}" == "OPT" ] || [ $inputtime -gt $maxattempts ]; then exit 0; fi
@@ -254,7 +254,7 @@ function getmagnetlink {
 
 function findaninixcheckouts {
     ### Find git checkouts in $pwd that are from AniNIX/Foundation
-    find . -type f -name config -exec egrep -l 'url[[:space:]]=[[:space:]]/srv/foundation|url[[:space:]]=[[:space:]]https://(foundation.)aninix.net|url[[:space:]]=[[:space:]]([a-zA-Z0-9])+@(foundation.)aninix.net' {} \; 2>/dev/null | sed 's#.git/config$##'
+    find . -type f -name config -exec grep -l -E 'url[[:space:]]=[[:space:]]/srv/foundation|url[[:space:]]=[[:space:]]https://(foundation.)aninix.net|url[[:space:]]=[[:space:]]([a-zA-Z0-9])+@(foundation.)aninix.net' {} \; 2>/dev/null | sed 's#.git/config$##'
 }
 
 function aninixgitstatus {

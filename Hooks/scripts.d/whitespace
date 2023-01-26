@@ -2,13 +2,12 @@
 
 # Sourced from https://github.com/git/git/blob/master/templates/hooks--pre-commit.sample
 
-if git ls-files | xargs egrep -irl '\s\+$' ; then
+if git ls-files | xargs --delimiter='\n' grep -irlE '\s\+$'; then
     echo The above lines have trailing whitespace. Run "sed -i 's/\s\+$//'" on the affected files.
     exit 1
 fi
 
-if git rev-parse --verify HEAD >/dev/null 2>&1
-then
+if git rev-parse --verify HEAD >/dev/null 2>&1; then
 	against=HEAD
 else
 	# Initial commit: diff against an empty tree object

@@ -9,6 +9,7 @@
 
 # Run all our checking scripts.
 for script in $(find `dirname "$0"`/scripts.d -type f); do
+    echo "Running ${script}"
     "$script"
     if [ $? -ne 0 ]; then
         echo "$script" failed checks.

@@ -2,7 +2,7 @@ import os
 import pytest
 
 def test_bash_import():
-    fh = os.popen("/bin/bash -c 'source Bash/header; [ `declare -F | wc -l` -eq `egrep -c ^function\\  Bash/header` ]'", mode='r', buffering=-1)
+    fh = os.popen("/bin/bash -c 'source Bash/header; [ `declare -F | wc -l` -eq `grep -E -c ^function\\  Bash/header` ]'", mode='r', buffering=-1)
     output = fh.read()
     retcode = fh.close()
     assert retcode == None
