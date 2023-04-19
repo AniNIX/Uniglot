@@ -2,7 +2,7 @@
 
 # Sourced from https://github.com/git/git/blob/master/templates/hooks--pre-commit.sample
 
-if git ls-files | xargs --delimiter='\n' grep -irlE '\s\+$'; then
+if git ls-files | grep -v .tar.gz | xargs --delimiter='\n' grep -irlE '\s\+$'; then
     echo The above lines have trailing whitespace. Run "sed -i 's/\s\+$//'" on the affected files.
     exit 1
 fi
