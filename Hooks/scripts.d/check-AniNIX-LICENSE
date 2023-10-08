@@ -1,0 +1,3 @@
+#!/bin/bash
+
+diff -w <(curl -s 'https://aninix.net/AniNIX/Ubiqtorate/raw/branch/main/roles/Foundation/files/custom/options/license/AniNIX-WTFPL') ./LICENSE
