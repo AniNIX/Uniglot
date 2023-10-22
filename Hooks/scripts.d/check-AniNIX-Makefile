@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Enforce each of the lines
+linenum=0
 for line in compile install clean uninstall test checkperm diff reverse; do
 
     newlinenum="$(grep -nE "^$line:" "Makefile" | cut -f 1 -d ':')"
