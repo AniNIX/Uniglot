@@ -1,3 +1,19 @@
 #!/bin/bash
 
-diff -w <(curl -s 'https://aninix.net/AniNIX/Ubiqtorate/raw/branch/main/roles/Foundation/files/custom/options/license/AniNIX-WTFPL') ./LICENSE
+# If the package hasn't been installed yet, since we are the origin, we have to bootstrap.
+if [ "$(basename "$PWD")" == 'Uniglot' ] && [ ! -f /usr/share/licenses/Uniglot/LICENSE ]; then
+    exit 0;
+fi
+
+diff -w /usr/share/licenses/Uniglot/LICENSE ./LICENSE;
+
+if [ $? -ne 0 ]; then
+    if [ "$(basename "$PWD")" == 'Uniglot' ]; then
+        echo INFO: You are changing the LICENSE and need to update downstream projects.
+        echo INFO: You also need to redeploy AniNIX/Foundation via AniNIX/Ubiqtorate for new projects.
+        exit 0;
+    else
+        echo ERROR: License is out of sync with AniNIX/Uniglot or you don\'t have Uniglot locally installed.
+        exit 1;
+    fi
+fi;

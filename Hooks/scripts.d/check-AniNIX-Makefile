@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Enforce each of the lines
+for line in compile install clean uninstall test checkperm diff reverse; do
+
+    newlinenum="$(grep -nE "^$line:" "Makefile" | cut -f 1 -d ':')"
+
+    # Case 1: Missing section
+    if [ -z "$newlinenum" ]; then
+        echo "$file" is missing "$line"
+        exit 1
+    fi
+
+    # Case 2: Line is out of order
+    if [ "$newlinenum" -lt "$linenum" ]; then
+        echo "$file" has section "$line" out of order.
+        exit 2
+    fi
+    linenum="$newlinenum"
+
+done

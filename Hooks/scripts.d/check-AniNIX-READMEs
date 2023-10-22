@@ -1,0 +1,55 @@
+#!/bin/bash
+
+
+# Allow verbosity
+if [ "$1" == "-v" ]; then
+    set -x;
+    shift;
+fi
+
+# Allow passing in more than just the landing README.md, but default to ./README.md
+files="$@"
+if [ -z "$files" ]; then
+    files="./README.md"
+fi
+
+# Iterate on each file.
+for file in $files; do
+
+    # Reset order tracking
+    linenum=0
+
+    # Enforce each of the lines
+    for line in '^# Etymology$' '^# Relevant Files and Software$' '^# Available Clients$' '^# Equivalents or Competition$'; do
+        newlinenum="$(grep -nE "$line" "$file" | cut -f 1 -d ':')"
+
+        # Case 1: Missing section
+        if [ -z "$newlinenum" ]; then
+            echo "$file" is missing "$line"
+            exit 1
+        fi
+
+        # Case 2: Line is out of order
+        if [ "$newlinenum" -lt "$linenum" ]; then
+            echo "$file" has section "$line" out of order.
+            exit 2
+        fi
+        linenum="$newlinenum"
+
+    done
+
+    # Case 3: Spelling errors are present
+    spellerrors="$(cat "$file" | aspell -p <(echo personal_ws-1.1 en 0; cat ~/.vim/spell/en.utf-8.add) list)"
+    if [ `echo "$spellerrors" | wc -l` -ne 1 ]; then
+        echo "$file" has spelling errors.
+        echo "$spellerrors"
+        exit 3
+    fi
+
+done
+
+# Wiki documentation is procedurally generated in its own repo.
+if ! grep -E ^wiki/ .gitignore 1>/dev/null; then
+    echo The wiki folder needs to be ignored.
+    exit 4
+fi

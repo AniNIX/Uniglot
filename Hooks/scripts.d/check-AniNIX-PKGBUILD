@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Ensure that the following lines match the base PKGBUILD
+retcode=0
+(for term in pkgname replaces pkgver epoch pkgdesc url license ../LICENSE; do
+    current="$(grep "${term}" ./PKGBUILD)"
+    reference="$(grep "${term}" /opt/aninix/Uniglot/pacman/PKGBUILD)"
+    diff <(printf "${reference}") <(echo "${current}")S
+    retcode="$(( $retcode || $? ))";
+done) &>/dev/null
+
+if [ "$(basename "$0")" == 'Uniglot' ] && [ "$retcode" != 0 ]; then
+    if [ ! -f /opt/aninix/Uniglot/pacman/PKGBUILD ]; then
+        # Suppress output for this package when it isn't installed yet.
+        echo $0
+    else
+        echo INFO: You have introduced delta for the PKGBUILD. You may need to update downstream projects.
+        exit 0
+    fi
+elif [ "$retcode" != 0 ]; then
+    echo ERROR: PKGBUILD is out of sync with AniNIX/Uniglot.
+fi
