@@ -21,7 +21,7 @@ for file in $files; do
 
     # Enforce each of the lines
     for line in '^# Etymology$' '^# Relevant Files and Software$' '^# Available Clients$' '^# Equivalents or Competition$'; do
-        newlinenum="$(grep -nE "$line" "$file" | cut -f 1 -d ':')"
+        newlinenum="$(grep -m 1 -nE "$line" "$file" | cut -f 1 -d ':')"
 
         # Case 1: Missing section
         if [ -z "$newlinenum" ]; then
