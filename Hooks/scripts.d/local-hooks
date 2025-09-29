@@ -3,6 +3,7 @@
 
 if [ -d precommit-hooks ]; then
     for script in `find precommit-hooks -type f`; do
+        echo Running "$script"
         if ! bash "$script"; then
             echo "Local script $script failed checks."
             exit 1
