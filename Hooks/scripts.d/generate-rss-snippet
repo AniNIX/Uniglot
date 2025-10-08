@@ -1,0 +1,12 @@
+#!/bin/bash
+
+firstRSSEntryPy=$(dirname "$0")/../../Python/first_rss_entry.py
+if [ -d /var/lib/gitea/custom/public/assets/ ] && [ -d ./rss/ ]; then
+    sudo mkdir -p /var/lib/gitea/custom/public/assets/rss-snippets
+    for feed in `find ./rss/ -type f -name '*.xml'`; do
+        feedshort="$(basename "$feed" | sed 's/.xml$//')"
+        python3 "$firstRSSEntryPy" "$feed" > /tmp/${feedshort}
+        sudo mv /tmp/${feedshort} /var/lib/gitea/custom/public/assets/rss-snippets
+    done
+    sudo chown -R gitea: /var/lib/gitea/custom/public/assets/rss-snippets
+fi
