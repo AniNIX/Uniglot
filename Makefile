@@ -1,5 +1,5 @@
 installdir = ${pkgdir}/opt/aninix/Uniglot/
-targets = Bash C CSharp Hooks
+targets = Bash C CSharp Python Hooks
 
 compile:
 	@echo Nothing to compile.
