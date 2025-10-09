@@ -25,6 +25,14 @@ The Hooks folder includes a standard pre-commit and pre-receive that will be enf
 
 Notably, each repo that subscribes to this enforcement can also commit their own standards in addition to global standards. Python tests should go in a folder called `tests/` and scripts in a folder called `precommit-hooks/`. These will be run in addition to the global hooks.
 
+### Consumed Directories
+
+When used with `uniglot-clone`, there are several directories at which AniNIX/Uniglot's hooks will look.
+
+* the `rss/` directory will be used by `Hooks/scripts.d/generate-rss-snippet` on a webserver to publish snippets. See [/AniNIX/Kapisi/src/branch/main/roles/Foundation/files/custom/public/assets/js/aninix.js#L2](aninix.js#L2) for options to consume these snippets in a webpage. This allows each repo to publish new updates in one place and webpages to show it in addition to [https://singularity.aninix.net](AniNIX/Singularity) and other readers.
+* The `tests/` directory will be used by `Hooks/scripts.d/pytest` to run Python unit tests on a repo. Any code should be wrapped with automated regressions.
+* The `precommit-hooks` directory will be used by `Hooks/scripts.d/local-hooks`. This allows individual repos to use our general hooks and then add on specific tests on top, such as lint checkers or consistency checkers.
+
 ## Standard Libraries
 
 Each language for which we have libraries should have its own folder. Breakdown within each of these may be broken up by line count or topic, at the author's discretion. Once an include standard has been set, though, it should be preserved. For example, if functions in [the Bash header](./Bash/header) are to be broken out into subordinate files, then the Bash header should include these files that contain functions formally in itself.

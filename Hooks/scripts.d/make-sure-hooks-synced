@@ -1,0 +1,4 @@
+if [ `git ls-files -m | grep -E '^Hooks/scripts.d|^precommit-hooks/' | wc -l` != '0' ]; then
+    echo 'Hooks have changed and need to be added. Run `git add precommit-hooks`'
+    exit 1
+fi

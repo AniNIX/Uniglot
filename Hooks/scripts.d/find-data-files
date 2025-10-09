@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# We don't want to commit data files, with the exceptions being our GPG public key and organization logo in PNG & ASCII format.
+result="$(git ls-files | xargs -n 1 file | grep -Ev ASCII\ text\|JSON\|empty\|Unicode\ text | grep -vE '^Resources/logo.png|^Resources/ascii.txt|^Resources/public.gpg')"
+if [ -n "$result" ]; then
+    echo "These files need to be evaluated -- generally, don't commit data files to Git."
+    echo "$result"
+    exit 1
+fi
+exit 0
