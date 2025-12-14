@@ -6,7 +6,7 @@ export retcode=0
 for term in ^pkgname\= ^replaces\= ^pkgver\= ^epoch\= ^pkgdesc\= ^url\= ^license\= ../LICENSE; do
     current="$(grep -E "${term}" ./PKGBUILD)"
     reference="$(grep -E "${term}" /opt/aninix/Uniglot/pacman/PKGBUILD)"
-    diff -w --color=always <(printf "${reference}") <(printf "${current}")
+    diff -w --color=always <(printf "${current}") <(printf "${reference}")
     export retcode="$(( $retcode || $? ))";
     if [ "$retcode" != 0 ]; then
         echo "$term has delta."

@@ -5,7 +5,7 @@ if [ "$(basename "$PWD")" == 'Uniglot' ] && [ ! -f /usr/share/licenses/Uniglot/L
     exit 0;
 fi
 
-diff -w /usr/share/licenses/Uniglot/LICENSE ./LICENSE;
+diff -w ./LICENSE /usr/share/licenses/Uniglot/LICENSE ./LICENSE
 
 if [ $? -ne 0 ]; then
     if [ "$(basename "$PWD")" == 'Uniglot' ]; then
