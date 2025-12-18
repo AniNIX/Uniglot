@@ -1,11 +1,30 @@
 #!/bin/bash
+result=0
+IFS="
+"
+originURL="$(git config remote.origin.url)"
+
+homedir=0
+if [[ "$originURL" =~ .*HomeDir.git$ ]]; then
+    homedir=1
+fi
 
 # We don't want to commit data files, with the exceptions being our GPG public key and organization logo in PNG & ASCII format.
-for file in `git ls-files | xargs -n 1 file | grep -Ev 'ASCII text|JSON|empty|Unicode text|symbolic link' | grep -vE '^Resources/logo.png|^Resources/ascii.txt|^Resources/public.gpg' | cut -f 1 -d :`; do
-    if [ "$(du -k "${file}" | awk '{ print $1; }')" -gt 10 ]; then
-        echo "These files need to be evaluated -- generally, don't commit data files to Git."
-        echo "$result"
-        exit 1
+for file in `git ls-files | xargs -d '\n' -n 1 file | grep -Ev 'ASCII text|JSON|empty|Unicode text|symbolic link|^Resources/logo.png|^Resources/ascii.txt|^Resources/public.gpg'`; do
+    #echo Evaluating \`"${file}"\`
+    filename="$(echo "${file}" | cut -f 1 -d ':')"
+
+    # Some databases need to be revision controlled to protect secrets, but these should only be committed to private repos.
+    if [ $homedir -eq 1 ] && [[ "$file" =~ GPG.keybox|Ansible.Vault|Keepass|^.gnupg/tofu.db ]]; then
+        continue
+    fi
+
+    if [ "$(du -k "${filename}" | awk '{ print $1; }')" -gt 10 ]; then
+        echo "$file"
+        result=1
     fi
 done
-exit 0
+if [ $result -eq 1 ]; then
+    echo "These files need to be evaluated -- generally, don't commit data files to Git."
+fi
+exit $result

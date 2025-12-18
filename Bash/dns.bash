@@ -32,5 +32,10 @@ function GenerateCAA {
 
 function GenerateSSHFP {
     ### Generate the SSHFP
-    ssh-keyscan -D localhost | grep -E '1 2|4 2' | sed 's/localhost IN SSHFP //'
+    (# 4 means ed25519, 2 means SHA2 hash.
+    ssh-keygen -r localhost -f /etc/ssh/ssh_host_ed25519_key.pub | grep '4 2'
+    # 1 means RSA, 2 means SHA2 hash.
+    ssh-keygen -r localhost -f /etc/ssh/ssh_host_rsa_key.pub | grep '1 2'
+    # We will not show the 4 1 or 1 1 records, as SHA1 is broken.
+    ) | sed 's/localhost IN SSHFP //'
 }
