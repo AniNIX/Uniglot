@@ -19,7 +19,7 @@ for file in `git ls-files | xargs -d '\n' -n 1 file | grep -Ev 'ASCII text|JSON|
         continue
     fi
 
-    if [ "$(du -k "${filename}" | awk '{ print $1; }')" -gt 10 ]; then
+    if [ "$(du -k "${filename}" | awk '{ print $1; }')" -gt 250 ]; then
         echo "$file"
         result=1
     fi

@@ -8,7 +8,13 @@
 # To enable this hook, rename this file to "pre-commit".
 
 # Run all our checking scripts.
-for script in $(find `dirname "$0"`/scripts.d -type f); do
+#
+scriptlist="$(find `dirname "$0"`/scripts.d -type f)"
+if [ -f .wiki-repo ]; then
+    scriptlist="$(echo "$scriptlist" | grep -vE 'Makefile|PKGBUILD|pytest')"
+fi
+
+for script in $scriptlist; do
     echo "Running ${script}"
     "$script"
     if [ $? -ne 0 ]; then

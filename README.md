@@ -29,9 +29,10 @@ Notably, each repo that subscribes to this enforcement can also commit their own
 
 When used with `uniglot-clone`, there are several directories at which AniNIX/Uniglot's hooks will look.
 
-* the `rss/` directory will be used by `Hooks/scripts.d/generate-rss-snippet` on a webserver to publish snippets. See [/AniNIX/Kapisi/src/branch/main/roles/Foundation/files/custom/public/assets/js/aninix.js#L2](aninix.js#L2) for options to consume these snippets in a webpage. This allows each repo to publish new updates in one place and webpages to show it in addition to [https://singularity.aninix.net](AniNIX/Singularity) and other readers.
+* the `rss/` directory will be used by `Hooks/scripts.d/generate-rss-snippet` on a webserver to publish snippets. See [/AniNIX/Kapisi/src/branch/main/roles/Foundation/files/custom/public/assets/js/aninix.js#L2](aninix.js#L2) for options to consume these snippets in a web page. This allows each repo to publish new updates in one place and webpages to show it in addition to [https://singularity.aninix.net](AniNIX/Singularity) and other readers.
 * The `tests/` directory will be used by `Hooks/scripts.d/pytest` to run Python unit tests on a repo. Any code should be wrapped with automated regressions.
 * The `precommit-hooks` directory will be used by `Hooks/scripts.d/local-hooks`. This allows individual repos to use our general hooks and then add on specific tests on top, such as lint checkers or consistency checkers.
+* A touch file of `.wiki-repo` will bypass code compilation & packaging tests.
 
 ## Standard Libraries
 
