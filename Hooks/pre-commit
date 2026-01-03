@@ -11,7 +11,7 @@
 #
 scriptlist="$(find `dirname "$0"`/scripts.d -type f)"
 if [ -f .wiki-repo ]; then
-    scriptlist="$(echo "$scriptlist" | grep -vE 'Makefile|PKGBUILD|pytest')"
+    scriptlist="$(echo "$scriptlist" | grep -vE 'Makefile|PKGBUILD|pytest|gitignore')"
 fi
 
 for script in $scriptlist; do

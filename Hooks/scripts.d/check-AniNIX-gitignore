@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Wiki documentation is procedurally generated in its own repo.
+if ! grep -E ^wiki/ .gitignore 1>/dev/null; then
+    echo The wiki folder needs to be ignored.
+    exit 4
+fi
