@@ -214,6 +214,15 @@ done
 return 0;
 }
 
+# Confirm a user wants to do the thing.
+function confirmUser() {
+    infoheader WARNING: "$1"
+    read -p 'Are you sure? [yes/NO]' answer
+    if [ "${answer,,}" != 'yes' ]; then
+        exit 1
+    fi
+}
+
 ## Torrenting functions ##
 # Configure the torrenting engine.
 function configuretorrent {
